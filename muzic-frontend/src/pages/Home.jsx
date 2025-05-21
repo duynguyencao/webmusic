@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid';
 import SongCard from '../components/SongCard';
 import Box from '@mui/material/Box';
@@ -9,48 +9,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import Sidebar from '../components/Sidebar';
+import { fetchModel } from '../lib/fetchModelData';
 
-const initialSongs = [
-  {
-    title: 'Song 1',
-    artist: 'Artist 1',
-    cover: 'https://picsum.photos/200?random=1',
-    src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-  },
-  {
-    title: 'Song 2',
-    artist: 'Artist 2',
-    cover: 'https://picsum.photos/200?random=2',
-    src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-  },
-  {
-    title: 'Song 3',
-    artist: 'Artist 3',
-    cover: 'https://picsum.photos/200?random=3',
-    src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-  },
-  {
-    title: 'Song 4',
-    artist: 'Artist 4',
-    cover: 'https://picsum.photos/200?random=4',
-    src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
-  },
-  {
-    title: 'Song 5',
-    artist: 'Artist 5',
-    cover: 'https://picsum.photos/200?random=5',
-    src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
-  },
-];
-
-const albums = [
-  { name: 'Album 1', artist: 'Artist A', cover: 'https://picsum.photos/120?random=21' },
-  { name: 'Album 2', artist: 'Artist B', cover: 'https://picsum.photos/120?random=22' },
-  { name: 'Album 3', artist: 'Artist C', cover: 'https://picsum.photos/120?random=23' },
-];
-
-export default function Home({ role }) {
-  const [songs, setSongs] = useState(initialSongs);
+export default function Home({ role, setCurrentSong }) {
+  const [songs, setSongs] = useState([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: '', artist: '', cover: '', src: '' });
   const [editIndex, setEditIndex] = useState(null);
@@ -58,16 +20,37 @@ export default function Home({ role }) {
   const [editOpen, setEditOpen] = useState(false);
   const [search, setSearch] = useState('');
 
+  // Fetch danh sách bài hát từ backend
+  useEffect(() => {
+    fetchModel('songs')
+      .then(data => setSongs(data))
+      .catch(err => console.error('Lỗi fetch songs:', err));
+  }, []);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => { setOpen(false); setForm({ title: '', artist: '', cover: '', src: '' }); };
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  const handleAdd = () => {
+
+  // Thêm bài hát (POST)
+  const handleAdd = async () => {
     if (form.title && form.artist && form.cover && form.src) {
-      setSongs([{ ...form }, ...songs]);
-      handleClose();
+      try {
+        const res = await fetch('http://localhost:5000/api/song', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form)
+        });
+        if (!res.ok) throw new Error('Lỗi thêm bài hát');
+        const newSong = await res.json();
+        setSongs([newSong, ...songs]);
+        handleClose();
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
+  // Sửa bài hát (PUT)
   const handleEditOpen = (idx) => {
     setEditIndex(idx);
     setEditForm(songs[idx]);
@@ -78,19 +61,39 @@ export default function Home({ role }) {
     setEditForm({ title: '', artist: '', cover: '', src: '' });
     setEditIndex(null);
   };
-
   const handleEditChange = (e) => setEditForm({ ...editForm, [e.target.name]: e.target.value });
-
-  const handleEditSave = () => {
-    const updated = [...songs];
-    updated[editIndex] = editForm;
-    setSongs(updated);
-    setEditOpen(false);
+  const handleEditSave = async () => {
+    try {
+      const songId = songs[editIndex]._id;
+      const res = await fetch(`http://localhost:5000/api/song/${songId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm)
+      });
+      if (!res.ok) throw new Error('Lỗi cập nhật bài hát');
+      const updatedSong = await res.json();
+      const updated = [...songs];
+      updated[editIndex] = updatedSong;
+      setSongs(updated);
+      setEditOpen(false);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleDelete = (idx) => {
+  // Xóa bài hát (DELETE)
+  const handleDelete = async (idx) => {
     if (window.confirm('Bạn có chắc muốn xóa bài hát này?')) {
-      setSongs(songs.filter((_, i) => i !== idx));
+      try {
+        const songId = songs[idx]._id;
+        const res = await fetch(`http://localhost:5000/api/song/${songId}`, {
+          method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Lỗi xóa bài hát');
+        setSongs(songs.filter((_, i) => i !== idx));
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
@@ -208,63 +211,11 @@ export default function Home({ role }) {
               role={role}
               onEdit={() => handleEditOpen(idx)}
               onDelete={() => handleDelete(idx)}
+              onPlay={() => setCurrentSong(song)}
             />
           </Grid>
         ))}
       </Grid>
-      {/* Section playlist nổi bật */}
-      <Box sx={{ mt: 8, position: 'relative', zIndex: 1 }}>
-        <Box sx={{ fontSize: 28, fontWeight: 700, color: '#fff', mb: 2 }}>Playlist nổi bật</Box>
-        <Grid container spacing={4}>
-          {[1,2,3].map((i) => (
-            <Grid item xs={12} sm={6} md={4} key={i}>
-              <Box sx={{
-                bgcolor: 'rgba(255,255,255,0.04)',
-                borderRadius: 4,
-                p: 3,
-                boxShadow: '0 2px 16px rgba(30,215,96,0.10)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                transition: 'box-shadow 0.2s',
-                '&:hover': { boxShadow: '0 4px 32px rgba(30,215,96,0.18)' },
-              }}>
-                <Box component="img" src={`https://picsum.photos/80?random=${i+10}`} alt="playlist" sx={{ borderRadius: 2, width: 80, height: 80, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }} />
-                <Box>
-                  <Box sx={{ color: '#fff', fontWeight: 700, fontSize: 20 }}>Playlist {i}</Box>
-                  <Box sx={{ color: '#b3b3b3', fontSize: 16 }}>Mô tả playlist nổi bật {i}</Box>
-                </Box>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-      <Box sx={{ mt: 8, position: 'relative', zIndex: 1 }}>
-        <Box sx={{ fontSize: 28, fontWeight: 700, color: '#fff', mb: 2 }}>Album/Artist nổi bật</Box>
-        <Grid container spacing={4}>
-          {albums.map((album, idx) => (
-            <Grid item xs={12} sm={6} md={4} key={idx}>
-              <Box sx={{
-                bgcolor: 'rgba(255,255,255,0.04)',
-                borderRadius: 4,
-                p: 3,
-                boxShadow: '0 2px 16px rgba(30,215,96,0.10)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                transition: 'box-shadow 0.2s',
-                '&:hover': { boxShadow: '0 4px 32px rgba(30,215,96,0.18)' },
-              }}>
-                <Box component="img" src={album.cover} alt={album.name} sx={{ borderRadius: 2, width: 80, height: 80, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }} />
-                <Box>
-                  <Box sx={{ color: '#fff', fontWeight: 700, fontSize: 20 }}>{album.name}</Box>
-                  <Box sx={{ color: '#b3b3b3', fontSize: 16 }}>{album.artist}</Box>
-                </Box>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
       <Box sx={{ mt: 10, textAlign: 'center', color: '#b3b3b3', fontSize: 16, opacity: 0.7, position: 'relative', zIndex: 2 }}>
         © 2025 Muzic. All rights reserved.
       </Box>

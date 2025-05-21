@@ -12,7 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 
-export default function SongCard({ song, role, onEdit, onDelete }) {
+export default function SongCard({ song, role, onEdit, onDelete, onPlay }) {
   return (
     <Card
       sx={{
@@ -41,7 +41,7 @@ export default function SongCard({ song, role, onEdit, onDelete }) {
         <Typography variant="subtitle2" color="#b3b3b3" noWrap sx={{ fontSize: 16 }}>{song.artist}</Typography>
       </CardContent>
       <Box sx={{ display: 'flex', justifyContent: 'center', pb: 2 }}>
-        <IconButton sx={{ bgcolor: '#1db954', color: '#fff', '&:hover': { bgcolor: '#1ed760' }, boxShadow: '0 2px 8px rgba(30,215,96,0.18)' }}>
+        <IconButton onClick={onPlay} sx={{ bgcolor: '#1db954', color: '#fff', '&:hover': { bgcolor: '#1ed760' }, boxShadow: '0 2px 8px rgba(30,215,96,0.18)' }}>
           <PlayArrowIcon />
         </IconButton>
       </Box>

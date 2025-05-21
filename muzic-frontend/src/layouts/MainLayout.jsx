@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -9,6 +9,7 @@ import Search from '../pages/Search';
 import Library from '../pages/Library';
 
 export default function MainLayout({ role, setRole, ...props }) {
+  const [currentSong, setCurrentSong] = useState(null);
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
       {/* Header luôn hiển thị */}
@@ -23,14 +24,13 @@ export default function MainLayout({ role, setRole, ...props }) {
         {role !== 'admin' && <Sidebar role={role} setRole={setRole} {...props} />}
         <Box sx={{ flex: 1, bgcolor: 'transparent', minHeight: 'calc(100vh - 64px)' }}>
           <Routes>
-            <Route path="/" element={<Home role={role} />} />
+            <Route path="/" element={<Home role={role} setCurrentSong={setCurrentSong} />} />
             <Route path="/search" element={<Search role={role} />} />
             <Route path="/library" element={<Library role={role} />} />
           </Routes>
         </Box>
       </Box>
-      {/* Player luôn hiển thị */}
-      <Player />
+      <Player song={currentSong} />
     </Box>
   );
 } 

@@ -7,30 +7,38 @@ import PauseIcon from '@mui/icons-material/Pause';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
+import { useFavorite } from '../contexts/FavoriteContext';
 
-const demoSong = {
-  title: 'Song 1',
-  artist: 'Artist 1',
-  cover: 'https://picsum.photos/48?random=1',
-  src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-};
-
-export default function Player() {
-  // Demo state, có thể thay bằng state thực tế
+export default function Player({ song }) {
   const [playing, setPlaying] = React.useState(false);
-  const [progress, setProgress] = React.useState(30);
+  const [progress, setProgress] = React.useState(0);
   const [volume, setVolume] = React.useState(80);
+  const { toggleFavorite, isFavorite } = useFavorite();
+
+  if (!song) return null;
 
   return (
     <Paper elevation={6} sx={{ position: 'sticky', bottom: 0, left: 0, right: 0, zIndex: 1201, bgcolor: '#181818', color: '#fff', borderRadius: 0, px: 2, py: 1, display: 'flex', alignItems: 'center', boxShadow: '0 -2px 10px rgba(0,0,0,0.7)' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 200 }}>
-        <Box component="img" src={demoSong.cover} alt={demoSong.title} sx={{ width: 48, height: 48, borderRadius: 1, mr: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }} />
+        <Box component="img" src={song.cover} alt={song.title} sx={{ width: 48, height: 48, borderRadius: 1, mr: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }} />
         <Box>
-          <Typography variant="subtitle1" sx={{ color: '#fff', fontWeight: 600 }}>{demoSong.title}</Typography>
-          <Typography variant="subtitle2" sx={{ color: '#b3b3b3' }}>{demoSong.artist}</Typography>
+          <Typography variant="subtitle1" sx={{ color: '#fff', fontWeight: 600 }}>{song.title}</Typography>
+          <Typography variant="subtitle2" sx={{ color: '#b3b3b3' }}>{song.artist}</Typography>
         </Box>
+        <IconButton 
+          onClick={() => toggleFavorite(song)}
+          sx={{ 
+            color: isFavorite(song) ? '#1db954' : '#b3b3b3',
+            ml: 1,
+            '&:hover': { color: '#1db954' }
+          }}
+        >
+          {isFavorite(song) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+        </IconButton>
       </Box>
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>

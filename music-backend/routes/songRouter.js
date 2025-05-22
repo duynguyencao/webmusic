@@ -21,9 +21,16 @@ router.get("/", async(req, res) => {
 
 // Add song
 router.post("/", async(req, res) => {
-    const song = new Song(req.body);
-    await song.save();
-    res.json(song);
+    console.log('POST /api/song - req.body:', req.body);
+    try {
+        const song = new Song(req.body);
+        await song.save();
+        console.log('Đã lưu bài hát mới:', song);
+        res.json(song);
+    } catch (err) {
+        console.error('Lỗi khi lưu bài hát:', err);
+        res.status(400).json({ error: err.message });
+    }
 });
 
 // Update song

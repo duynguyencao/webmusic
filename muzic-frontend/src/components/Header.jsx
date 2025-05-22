@@ -68,7 +68,7 @@ export default function Header({ role, onLogout, onSelectRole }) {
     <AppBar position="sticky" elevation={0} sx={{ top: 0, zIndex: (theme) => theme.zIndex.drawer + 2, bgcolor: 'rgba(25,20,20,0.95)', backdropFilter: 'blur(12px)', boxShadow: '0 2px 16px rgba(0,0,0,0.18)', borderBottom: '1.5px solid rgba(255,255,255,0.06)' }}>
       <Toolbar>
         <Typography variant="h5" noWrap sx={{ flexGrow: 1, color: '#fff', fontWeight: 700, letterSpacing: 1 }}>
-          Muzic
+          Music
         </Typography>
         <Search>
           <SearchIconWrapper>

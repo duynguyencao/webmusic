@@ -10,6 +10,8 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import Sidebar from '../components/Sidebar';
 import { fetchModel } from '../lib/fetchModelData';
+import { supabase } from '../lib/supabase';
+import removeVietnameseTones from '../lib/removeVietnameseTones';
 
 export default function Home({ role, setCurrentSong }) {
   const [songs, setSongs] = useState([]);
@@ -19,6 +21,7 @@ export default function Home({ role, setCurrentSong }) {
   const [editForm, setEditForm] = useState({ title: '', artist: '', cover: '', src: '' });
   const [editOpen, setEditOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [file, setFile] = useState(null);
 
   // Fetch danh sách bài hát từ backend
   useEffect(() => {
@@ -30,23 +33,49 @@ export default function Home({ role, setCurrentSong }) {
   const handleOpen = () => setOpen(true);
   const handleClose = () => { setOpen(false); setForm({ title: '', artist: '', cover: '', src: '' }); };
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
 
   // Thêm bài hát (POST)
   const handleAdd = async () => {
-    if (form.title && form.artist && form.cover && form.src) {
+    if (form.title && form.artist && file) {
+      if (!form.cover) {
+        alert('Vui lòng nhập link ảnh bìa (cover)!');
+        return;
+      }
       try {
+        // Tạo tên file mp3 từ tên bài hát (không dấu, viết thường, thay khoảng trắng bằng _)
+        const baseName = removeVietnameseTones(form.title).toLowerCase().replace(/\s+/g, '_');
+        const fileName = `${baseName}.mp3`;
+        // Sửa lại cú pháp upload đúng chuẩn SDK
+        const { data, error } = await supabase
+          .storage
+          .from('song')
+          .upload(`track/${fileName}`, file, { upsert: true });
+        console.log('Kết quả upload Supabase:', { data, error });
+        if (error) throw error;
+        const publicUrl = `https://mqamtavoeneqrvfmgkhs.supabase.co/storage/v1/object/public/song/track/${fileName}`;
+        console.log('Link public Supabase:', publicUrl);
         const res = await fetch('http://localhost:5000/api/song', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form)
+          body: JSON.stringify({
+            ...form,
+            src: publicUrl,
+          }),
         });
+        console.log('Kết quả response backend:', res);
         if (!res.ok) throw new Error('Lỗi thêm bài hát');
         const newSong = await res.json();
         setSongs([newSong, ...songs]);
         handleClose();
       } catch (err) {
+        alert('Lỗi: ' + (err.message || err));
         console.error(err);
       }
+    } else {
+      alert('Vui lòng nhập đầy đủ tên bài hát, nghệ sĩ và chọn file mp3!');
     }
   };
 
@@ -148,7 +177,7 @@ export default function Home({ role, setCurrentSong }) {
             <TextField label="Tên bài hát" name="title" value={form.title} onChange={handleChange} fullWidth autoFocus />
             <TextField label="Nghệ sĩ" name="artist" value={form.artist} onChange={handleChange} fullWidth />
             <TextField label="Link ảnh bìa" name="cover" value={form.cover} onChange={handleChange} fullWidth />
-            <TextField label="Link nhạc (mp3)" name="src" value={form.src} onChange={handleChange} fullWidth />
+            <input type="file" accept="audio/mp3" onChange={handleFileChange} />
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Hủy</Button>

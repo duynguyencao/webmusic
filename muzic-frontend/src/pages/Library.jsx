@@ -2,21 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
-export default function Library() {
+export default function Library({ setCurrentSong }) {
+  const username = localStorage.getItem('username');
   const [favorites, setFavorites] = useState([]);
 
+  const getSongKey = (song) => song?._id || song?.src || (song?.title + song?.artist);
+
   useEffect(() => {
-    // Lấy userId và token từ localStorage (giả sử đã đăng nhập)
-    const userId = localStorage.getItem('userId');
-    const token = localStorage.getItem('token');
-    if (!userId || !token) return;
-    fetch(`http://localhost:5000/api/user/${userId}/favorites`, {
-      headers: { Authorization: 'Bearer ' + token }
-    })
-      .then(res => res.json())
-      .then(data => setFavorites(data))
-      .catch(err => setFavorites([]));
-  }, []);
+    if (!username) {
+      setFavorites([]);
+      return;
+    }
+    const favStr = localStorage.getItem(`favorites_${username}`);
+    setFavorites(favStr ? JSON.parse(favStr) : []);
+    const updateFavorites = () => {
+      const favStr = localStorage.getItem(`favorites_${username}`);
+      setFavorites(favStr ? JSON.parse(favStr) : []);
+    };
+    window.addEventListener('favorites-updated', updateFavorites);
+    return () => window.removeEventListener('favorites-updated', updateFavorites);
+  }, [username]);
 
   function formatNumber(num) {
     if (!num) return '';
@@ -54,7 +59,12 @@ export default function Library() {
             </TableHead>
             <TableBody>
               {favorites.map((song, idx) => (
-                <TableRow key={idx} hover sx={{ '&:hover': { bgcolor: 'rgba(29,185,84,0.08)' } }}>
+                <TableRow
+                  key={getSongKey(song)}
+                  hover
+                  sx={{ '&:hover': { bgcolor: 'rgba(29,185,84,0.08)', cursor: 'pointer' } }}
+                  onClick={() => setCurrentSong && setCurrentSong(song)}
+                >
                   <TableCell sx={{ color: '#fff', border: 0, fontWeight: 500 }}>{idx + 1}</TableCell>
                   <TableCell sx={{ color: '#fff', border: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar src={song.cover} alt={song.title} variant="rounded" sx={{ width: 48, height: 48, mr: 2 }} />

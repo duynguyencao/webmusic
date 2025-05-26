@@ -9,16 +9,17 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import TextField from '@mui/material/TextField';
-import Grid from '@mui/material/Grid';
 
 export default function SongCard({ song, role, onEdit, onDelete, onPlay }) {
   return (
     <Card
       sx={{
+        width: 220,
+        minWidth: 220,
+        maxWidth: 220,
         display: 'flex',
         flexDirection: 'column',
-        height: '100%',
+        height: 340,
         bgcolor: '#232526',
         borderRadius: 4,
         boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
@@ -29,16 +30,58 @@ export default function SongCard({ song, role, onEdit, onDelete, onPlay }) {
         },
       }}
     >
-      <CardMedia
-        component="img"
-        height="180"
-        image={song.cover}
-        alt={song.title}
-        sx={{ borderRadius: 3, width: '90%', mx: 'auto', my: 2, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
-      />
-      <CardContent sx={{ flexGrow: 1, textAlign: 'center', color: '#fff' }}>
-        <Typography variant="h6" noWrap sx={{ fontWeight: 700, fontSize: 20 }}>{song.title}</Typography>
-        <Typography variant="subtitle2" color="#b3b3b3" noWrap sx={{ fontSize: 16 }}>{song.artist}</Typography>
+      <Box
+        sx={{
+          width: '100%',
+          height: 180,
+          overflow: 'hidden',
+          borderRadius: 3,
+          mx: 'auto',
+          my: 2,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.18)'
+        }}
+      >
+        <CardMedia
+          component="img"
+          image={song.cover}
+          alt={song.title}
+          sx={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: 0
+          }}
+        />
+      </Box>
+      <CardContent sx={{ flexGrow: 1, textAlign: 'center', color: '#fff', position: 'relative', pb: 0 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 700,
+            fontSize: 18,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            width: '100%',
+            display: 'block'
+          }}
+        >
+          {song.title}
+        </Typography>
+        <Typography
+          variant="subtitle2"
+          color="#b3b3b3"
+          sx={{
+            fontSize: 15,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            width: '100%',
+            display: 'block'
+          }}
+        >
+          {song.artist}
+        </Typography>
       </CardContent>
       <Box sx={{ display: 'flex', justifyContent: 'center', pb: 2 }}>
         <IconButton onClick={onPlay} sx={{ bgcolor: '#1db954', color: '#fff', '&:hover': { bgcolor: '#1ed760' }, boxShadow: '0 2px 8px rgba(30,215,96,0.18)' }}>

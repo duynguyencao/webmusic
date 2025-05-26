@@ -5,7 +5,7 @@ const router = express.Router();
 
 // Get all songs or search
 router.get("/", async(req, res) => {
-    const { search } = req.query;
+    const { search, genre } = req.query;
     let query = {};
     if (search) {
         query = {
@@ -15,6 +15,9 @@ router.get("/", async(req, res) => {
             ]
         };
     }
+    if (genre) {
+        query.genre = genre;
+    }
     const songs = await Song.find(query);
     res.json(songs);
 });
@@ -23,7 +26,11 @@ router.get("/", async(req, res) => {
 router.post("/", async(req, res) => {
     console.log('POST /api/song - req.body:', req.body);
     try {
-        const song = new Song(req.body);
+        const { title, artist, cover, src, genre, duration } = req.body;
+        if (!title || !artist || !cover || !src || !genre) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+        const song = new Song({ title, artist, cover, src, genre, duration });
         await song.save();
         console.log('Đã lưu bài hát mới:', song);
         res.json(song);

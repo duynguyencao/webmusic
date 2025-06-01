@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import IconButton from '@mui/material/IconButton';
@@ -7,62 +7,39 @@ import PauseIcon from '@mui/icons-material/Pause';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import RepeatIcon from '@mui/icons-material/Repeat';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
-export default function Player({ song }) {
+export default function Player({ song, user, playlist = [], currentIndex = 0, setCurrentSong, reloadFavorites }) {
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(80);
-  const [isFav, setIsFav] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRepeat, setIsRepeat] = useState(false);
+  const [isShuffle, setIsShuffle] = useState(false);
   const audioRef = useRef(null);
-
-  const getSongKey = (song) => song?._id || song?.src;
-
-  const checkFavorite = useCallback(() => {
-    const username = localStorage.getItem('username');
-    if (!username || !song) return setIsFav(false);
-    const favStr = localStorage.getItem(`favorites_${username}`);
-    const favorites = favStr ? JSON.parse(favStr) : [];
-    setIsFav(favorites.some(fav => getSongKey(fav) === getSongKey(song)));
-  }, [song]);
-
-  const handleToggleFavorite = () => {
-    const username = localStorage.getItem('username');
-    if (!username || !song) return;
-    const key = `favorites_${username}`;
-    const favStr = localStorage.getItem(key);
-    let favorites = favStr ? JSON.parse(favStr) : [];
-    const songKey = getSongKey(song);
-    const exists = favorites.some(fav => getSongKey(fav) === songKey);
-    if (exists) {
-      favorites = favorites.filter(fav => getSongKey(fav) !== songKey);
-    } else {
-      favorites.push(song);
-    }
-    localStorage.setItem(key, JSON.stringify(favorites));
-    window.dispatchEvent(new Event('favorites-updated'));
-    checkFavorite();
-  };
 
   useEffect(() => {
     setCurrentTime(0);
     setDuration(0);
     setPlaying(!!song);
     if (audioRef.current) audioRef.current.currentTime = 0;
-    checkFavorite();
-  }, [song, checkFavorite]);
-
-  useEffect(() => {
-    const updateFav = () => checkFavorite();
-    window.addEventListener('favorites-updated', updateFav);
-    return () => window.removeEventListener('favorites-updated', updateFav);
-  }, [checkFavorite]);
+    if (user && user._id) {
+      setIsLoading(true);
+      fetch(`http://100.98.198.23:8080/api/favorite/${user._id}`)
+        .then(res => res.json())
+        .then(data => {
+          setFavorites(Array.isArray(data) ? data : []);
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [song, user]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -80,9 +57,47 @@ export default function Player({ song }) {
       setCurrentTime(value);
     }
   };
+
+  const playNext = () => {
+    if (!playlist.length) return;
+    let nextIdx;
+    if (isShuffle) {
+      do {
+        nextIdx = Math.floor(Math.random() * playlist.length);
+      } while (nextIdx === currentIndex && playlist.length > 1);
+    } else {
+      nextIdx = (currentIndex + 1) % playlist.length;
+    }
+    setCurrentSong && setCurrentSong(playlist[nextIdx]);
+  };
+
+  const playPrev = () => {
+    if (!playlist.length) return;
+    let prevIdx = (currentIndex - 1 + playlist.length) % playlist.length;
+    setCurrentSong && setCurrentSong(playlist[prevIdx]);
+  };
+
   const handleEnded = () => {
-    setPlaying(false);
-    setCurrentTime(duration);
+    if (isRepeat) {
+      setPlaying(false);
+      setTimeout(() => setPlaying(true), 100);
+    } else {
+      playNext();
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!user || !user._id || !song || !song._id) return;
+    const method = favorites.some(fav => fav._id === song._id) ? 'DELETE' : 'POST';
+    await fetch('http://100.98.198.23:8080/api/favorite', {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user._id, songId: song._id })
+    });
+    fetch(`http://100.98.198.23:8080/api/favorite/${user._id}`)
+      .then(res => res.json())
+      .then(data => setFavorites(Array.isArray(data) ? data : []));
+    if (typeof reloadFavorites === 'function') reloadFavorites();
   };
 
   const formatTime = (sec) => {
@@ -167,15 +182,18 @@ export default function Player({ song }) {
           </Box>
           <IconButton
             onClick={handleToggleFavorite}
+            disabled={isLoading}
             sx={{
-              color: isFav ? '#1db954' : '#b3b3b3',
+              color: favorites.some(fav => fav._id === song._id) ? '#1db954' : '#b3b3b3',
               ml: 1,
-              '&:hover': { color: '#1db954' }
+              '&:hover': { color: '#1db954' },
+              '&.Mui-disabled': { color: 'rgba(255,255,255,0.3)' }
             }}
           >
-            {isFav ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+            {favorites.some(fav => fav._id === song._id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
           </IconButton>
         </Box>
+
         <Box sx={{
           width: '100%',
           display: 'flex',
@@ -185,17 +203,20 @@ export default function Player({ song }) {
           py: 1,
           bgcolor: 'transparent'
         }}>
-          <IconButton sx={{ color: '#b3b3b3' }}><ShuffleIcon /></IconButton>
-          <IconButton sx={{ color: '#b3b3b3' }}><SkipPreviousIcon /></IconButton>
+          <IconButton onClick={() => setIsShuffle(!isShuffle)} sx={{ color: isShuffle ? '#1db954' : '#b3b3b3' }}><ShuffleIcon /></IconButton>
+          <IconButton onClick={playPrev} sx={{ color: '#b3b3b3' }}><SkipPreviousIcon /></IconButton>
           <IconButton onClick={() => setPlaying(!playing)} sx={{
-            bgcolor: '#fff', color: '#181818', mx: 1,
+            bgcolor: '#fff',
+            color: '#181818',
+            mx: 1,
             '&:hover': { bgcolor: '#1db954', color: '#fff' }
           }}>
             {playing ? <PauseIcon /> : <PlayArrowIcon />}
           </IconButton>
-          <IconButton sx={{ color: '#b3b3b3' }}><SkipNextIcon /></IconButton>
-          <IconButton sx={{ color: '#b3b3b3' }}><RepeatIcon /></IconButton>
+          <IconButton onClick={playNext} sx={{ color: '#b3b3b3' }}><SkipNextIcon /></IconButton>
+          <IconButton onClick={() => setIsRepeat(!isRepeat)} sx={{ color: isRepeat ? '#1db954' : '#b3b3b3' }}><RepeatIcon /></IconButton>
         </Box>
+
         <Box sx={{
           width: '100%',
           display: 'flex',
@@ -206,12 +227,11 @@ export default function Player({ song }) {
           gap: 1
         }}>
           <Typography sx={{ color: '#b3b3b3', fontSize: 14, minWidth: 36, textAlign: 'right' }}>
-            {formatTime(typeof currentTime === 'number' && !isNaN(currentTime) ? currentTime : 0)}
+            {formatTime(currentTime)}
           </Typography>
           <Slider
-            value={typeof currentTime === 'number' && !isNaN(currentTime) ? currentTime : 0}
-            min={0}
-            max={typeof duration === 'number' && !isNaN(duration) ? duration : 0}
+            value={currentTime}
+            max={duration}
             onChange={handleSeek}
             sx={{
               mx: 1,
@@ -224,9 +244,10 @@ export default function Player({ song }) {
             }}
           />
           <Typography sx={{ color: '#b3b3b3', fontSize: 14, minWidth: 36, textAlign: 'left' }}>
-            {formatTime(typeof duration === 'number' && !isNaN(duration) ? duration : 0)}
+            {formatTime(duration)}
           </Typography>
         </Box>
+
         <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 120, ml: 2 }}>
           <VolumeUpIcon sx={{ color: '#b3b3b3', mr: 1 }} />
           <Slider value={volume} onChange={(_, v) => setVolume(v)} sx={{ color: '#1db954', width: 80 }} />

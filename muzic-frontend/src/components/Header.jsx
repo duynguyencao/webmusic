@@ -5,18 +5,14 @@ import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
-import { alpha, styled } from '@mui/material/styles';
 import { Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
-
-
-export default function Header({ search, setSearch, ...props }) {
+export default function Header({ user, search, setSearch, onLogout }) {
   const navigate = useNavigate();
-  const username = localStorage.getItem('username');
 
   const handleLogout = () => {
-    localStorage.removeItem('username');
+    onLogout();
     navigate('/login');
   };
 
@@ -58,9 +54,9 @@ export default function Header({ search, setSearch, ...props }) {
           />
         </Box>
         <Box sx={{ ml: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-          {username ? (
+          {user ? (
             <>
-              <Typography sx={{ color: '#fff', fontWeight: 600 }}>{username}</Typography>
+              <Typography sx={{ color: '#fff', fontWeight: 600 }}>{user.username}</Typography>
               <Button variant="outlined" color="inherit" onClick={handleLogout}>
                 Đăng xuất
               </Button>

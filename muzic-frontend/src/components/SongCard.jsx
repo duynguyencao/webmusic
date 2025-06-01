@@ -56,6 +56,7 @@ export default function SongCard({ song, role, onEdit, onDelete, onPlay }) {
       <CardContent sx={{ flexGrow: 1, textAlign: 'center', color: '#fff', position: 'relative', pb: 0 }}>
         <Typography
           variant="h6"
+          noWrap
           sx={{
             fontWeight: 700,
             fontSize: 18,
@@ -71,6 +72,7 @@ export default function SongCard({ song, role, onEdit, onDelete, onPlay }) {
         <Typography
           variant="subtitle2"
           color="#b3b3b3"
+          noWrap
           sx={{
             fontSize: 15,
             overflow: 'hidden',

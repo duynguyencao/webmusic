@@ -1,55 +1,61 @@
 const express = require("express");
 const Song = require("../models/songModel");
-
 const router = express.Router();
 
-// Get all songs or search
+// Get all songs with optional search
 router.get("/", async(req, res) => {
-    const { search, genre } = req.query;
-    let query = {};
-    if (search) {
-        query = {
-            $or: [
-                { title: { $regex: search, $options: "i" } },
-                { artist: { $regex: search, $options: "i" } }
-            ]
-        };
+    try {
+        const { search } = req.query;
+        let query = {};
+
+        if (search) {
+            query = {
+                $or: [
+                    { title: { $regex: search, $options: "i" } },
+                    { artist: { $regex: search, $options: "i" } }
+                ]
+            };
+        }
+
+        const songs = await Song.find(query);
+        res.json(songs);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-    if (genre) {
-        query.genre = genre;
-    }
-    const songs = await Song.find(query);
-    res.json(songs);
 });
 
-// Add song
-router.post("/", async(req, res) => {
-    console.log('POST /api/song - req.body:', req.body);
+
+// Update song
+router.patch("/:id", async(req, res) => {
     try {
-        const { title, artist, cover, src, genre, duration } = req.body;
-        if (!title || !artist || !cover || !src || !genre) {
-            return res.status(400).json({ error: "Missing required fields" });
+        const song = await Song.findByIdAndUpdate(
+            req.params.id,
+            req.body, { new: true }
+        );
+
+        if (!song) {
+            return res.status(404).json({ error: "Song not found" });
         }
-        const song = new Song({ title, artist, cover, src, genre, duration });
-        await song.save();
-        console.log('Đã lưu bài hát mới:', song);
+
         res.json(song);
     } catch (err) {
-        console.error('Lỗi khi lưu bài hát:', err);
         res.status(400).json({ error: err.message });
     }
 });
 
-// Update song
-router.put("/:id", async(req, res) => {
-    const song = await Song.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(song);
-});
-
 // Delete song
 router.delete("/:id", async(req, res) => {
-    await Song.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
+    try {
+        const song = await Song.findByIdAndDelete(req.params.id);
+
+        if (!song) {
+            return res.status(404).json({ error: "Song not found" });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
 });
 
 module.exports = router;

@@ -3,6 +3,7 @@ import { Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar } from '@mu
 import HomeIcon from '@mui/icons-material/Home';
 import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
 import { Link, useLocation } from 'react-router-dom';
+import { Box } from '@mui/material';
 
 const drawerWidth = 220;
 

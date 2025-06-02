@@ -1,46 +1,56 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, Avatar } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-
-// Hardcode ảnh cho từng thể loại nếu muốn
-const genreAvatars = {
-  "Pop": "",
-  "Ballad": "",
-  "HipHop": "",
-  // ... thêm link ảnh nếu muốn
-};
+import React, { useEffect, useState } from "react";
+import Slider from "react-slick";
+import GenreCard from "../components/GenreCard";
+import { Box, Typography } from "@mui/material";
 
 export default function Genres() {
   const [genres, setGenres] = useState([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://100.98.198.23:8080/api/genre')
-      .then(res => res.json())
-      .then(setGenres);
+    fetch("http://100.98.198.23:8080/api/genre")
+      .then((res) => res.json())
+      .then((data) => setGenres(data));
   }, []);
 
+  const sliderSettings = {
+    dots: false,
+    infinite: false,
+    speed: 500,
+    slidesToShow: 5,
+    slidesToScroll: 2,
+    arrows: true,
+    responsive: [
+      { breakpoint: 1200, settings: { slidesToShow: 4 } },
+      { breakpoint: 900, settings: { slidesToShow: 3 } },
+      { breakpoint: 600, settings: { slidesToShow: 2 } },
+    ],
+  };
+
   return (
-    <Box sx={{ mt: 4 }}>
-      <Typography variant="h5" sx={{ color: '#fff', fontWeight: 700, mb: 2 }}>Thể loại nổi bật</Typography>
-      <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-        {genres.map((genre, idx) => (
-          <Box
-            key={idx}
-            sx={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer'
-            }}
-            onClick={() => navigate(`/genre/${encodeURIComponent(genre)}`)}
-          >
-            <Avatar
-              src={genreAvatars[genre] || ''}
-              sx={{ width: 100, height: 100, mb: 1, border: '3px solid #1db954' }}
-            />
-            <Typography sx={{ color: '#fff', fontWeight: 600 }}>{genre}</Typography>
-            <Typography sx={{ color: '#b3b3b3', fontSize: 14 }}>Thể loại</Typography>
-          </Box>
-        ))}
+    <Box>
+      <Box sx={{ mt: 4 }}>
+        <Typography
+          variant="h5"
+          sx={{
+            color: "#fff",
+            fontWeight: 700,
+            mb: 3,
+            fontSize: { xs: 20, md: 24 },
+            letterSpacing: 0.5,
+          }}
+        >
+          Thể loại
+        </Typography>
+      </Box>
+      <Box>
+        <Slider {...sliderSettings}>
+          {genres.map((genre) => (
+            <div key={genre.id}>
+              <GenreCard genre={genre} />
+            </div>
+          ))}
+        </Slider>
       </Box>
     </Box>
   );
-} 
+}

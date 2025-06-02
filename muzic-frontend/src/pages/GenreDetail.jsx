@@ -6,14 +6,16 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 export default function GenreDetail({ setCurrentSong, onUpdatePlaylist }) {
   const { genreName } = useParams();
   const [songs, setSongs] = useState([]);
+  const [genre, setGenre] = useState({name: '', image_url: ''});
 
   useEffect(() => {
     fetch(`http://100.98.198.23:8080/api/genre/${encodeURIComponent(genreName)}`)
       .then(res => res.json())
       .then(data => {
-        setSongs(data);
+        setGenre(data.genre);
+        setSongs(data.songs);
         if (typeof onUpdatePlaylist === 'function') {
-          onUpdatePlaylist(data);
+          onUpdatePlaylist(data.songs);
         }
       });
   }, [genreName]);
@@ -21,9 +23,9 @@ export default function GenreDetail({ setCurrentSong, onUpdatePlaylist }) {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <Avatar sx={{ width: 120, height: 120, mr: 3 }} />
+        <Avatar src={genre.image_url} sx={{ width: 120, height: 120, mr: 3 }} />
         <Box>
-          <Typography variant="h2" sx={{ color: '#fff', fontWeight: 800 }}>{genreName}</Typography>
+          <Typography variant="h2" sx={{ color: '#fff', fontWeight: 800 }}>{genre.name}</Typography>
         </Box>
       </Box>
       <Typography variant="h5" sx={{ color: '#fff', fontWeight: 700, mb: 2 }}>Bài hát thuộc thể loại này</Typography>

@@ -38,6 +38,17 @@ export default function Player({ song, user, playlist = [], currentIndex = 0, se
           setFavorites(Array.isArray(data) ? data : []);
         })
         .finally(() => setIsLoading(false));
+
+      if (song && song._id) {
+        fetch('http://100.98.198.23:8080/api/history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user._id,
+            songId: song._id
+          })
+        }).catch(error => console.error('Error adding to history:', error));
+      }
     }
   }, [song, user]);
 

@@ -38,7 +38,8 @@ export default function SongCard({ song, role, onEdit, onDelete, onPlay }) {
           borderRadius: 3,
           mx: 'auto',
           my: 2,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.18)'
+          boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+          position: 'relative'
         }}
       >
         <CardMedia

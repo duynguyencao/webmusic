@@ -11,6 +11,8 @@ import Artists from '../pages/Artists';
 import ArtistDetail from '../pages/ArtistDetail';
 import Genres from '../pages/Genres';
 import GenreDetail from '../pages/GenreDetail';
+import History from '../pages/History';
+import Ranking from '../pages/Ranking';
 
 export default function MainLayout() {
   const [user, setUser] = useState(null);
@@ -22,10 +24,12 @@ export default function MainLayout() {
 
   const handleLogin = (userData) => {
     setUser(userData);
+    setCurrentSong(null);
   };
 
   const handleLogout = () => {
     setUser(null);
+    setCurrentSong(null);
   };
 
   const reloadFavorites = () => setFavoritesReloadKey(k => k + 1);
@@ -40,6 +44,9 @@ export default function MainLayout() {
 
   const handleUpdatePlaylist = (songs) => {
     setPlaylist(songs);
+    if(currentSong && !songs.some(s => s._id === currentSong._id)){
+      setCurrentSong(null);
+    }
   };
 
   return (
@@ -81,6 +88,20 @@ export default function MainLayout() {
                 setCurrentSong={handleSetCurrentSong} 
                 reloadFavorites={reloadFavorites} 
                 favoritesReloadKey={favoritesReloadKey}
+                onUpdatePlaylist={handleUpdatePlaylist}
+              />
+            } />
+            <Route path="/history" element={
+              <History 
+                user={user} 
+                setCurrentSong={handleSetCurrentSong}
+                onUpdatePlaylist={handleUpdatePlaylist}
+              />
+            } />
+            <Route path="/ranking" element={
+              <Ranking
+                user={user}
+                setCurrentSong={handleSetCurrentSong}
                 onUpdatePlaylist={handleUpdatePlaylist}
               />
             } />

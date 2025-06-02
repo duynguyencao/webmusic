@@ -63,7 +63,7 @@ const AdminSongManager = ({ user, search, onPlay }) => {
   const fetchArtists = async () => {
     const res = await fetch("http://100.98.198.23:8080/api/artist");
     const data = await res.json();
-    setArtists(data.map((a) => a.name || a));
+    setArtists(data);
   };
 
   const fetchGenres = async () => {
@@ -279,6 +279,8 @@ const AdminSongManager = ({ user, search, onPlay }) => {
           boxShadow: "0 2px 16px rgba(0,0,0,0.18)",
           borderRadius: 3,
           mt: 2,
+          maxHeight: 64 * 7 + 56, // 7 dòng + header (56px)
+          overflowY: "auto",
         }}
       >
         <Table>

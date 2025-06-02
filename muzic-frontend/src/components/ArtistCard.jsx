@@ -16,13 +16,14 @@ export default function ArtistCard({ artist }) {
         cursor: 'pointer',
         p: 2,
         borderRadius: 2,
-        bgcolor: 'rgba(24,24,24,0.98)',
+        bgcolor: 'transparent',
+        backdropFilter: 'blur(10px)',
         transition: 'all 0.3s ease',
         height: '100%',
         '&:hover': {
           transform: 'translateY(-8px)',
-          bgcolor: 'rgba(29,185,84,0.1)',
-          boxShadow: '0 8px 24px rgba(29,185,84,0.2)',
+          bgcolor: 'rgba(29,185,84,0.15)',
+          boxShadow: '0 8px 24px rgba(29,185,84,0.15)',
         }
       }}
       onClick={() => navigate(`/artist/${encodeURIComponent(artist.name)}`)}
@@ -31,10 +32,10 @@ export default function ArtistCard({ artist }) {
         <Avatar
           src={artist.image_url}
           sx={{ 
-            width: { xs: 120, md: 140 },
-            height: { xs: 120, md: 140 },
+            width: { xs: 100, md: 120 },
+            height: { xs: 100, md: 120 },
             mb: 2,
-            border: '3px solid #1db954',
+            border: '2px solid rgba(29,185,84,0.5)',
             transition: 'all 0.3s ease',
             '&:hover': {
               transform: 'scale(1.05)',
@@ -45,25 +46,25 @@ export default function ArtistCard({ artist }) {
         <Box
           sx={{
             position: 'absolute',
-            bottom: 16,
-            right: -8,
-            bgcolor: '#1db954',
+            bottom: 12,
+            right: -6,
+            bgcolor: 'rgba(29,185,84,0.8)',
             borderRadius: '50%',
             p: 0.5,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(29,185,84,0.3)',
+            boxShadow: '0 2px 8px rgba(29,185,84,0.2)',
           }}
         >
-          <MusicNoteIcon sx={{ color: '#fff', fontSize: 20 }} />
+          <MusicNoteIcon sx={{ color: '#fff', fontSize: 18 }} />
         </Box>
       </Box>
       <Typography 
         sx={{ 
           color: '#fff', 
           fontWeight: 600,
-          fontSize: { xs: 16, md: 18 },
+          fontSize: { xs: 15, md: 16 },
           mb: 0.5,
           textAlign: 'center',
         }}
@@ -73,7 +74,7 @@ export default function ArtistCard({ artist }) {
       <Typography 
         sx={{ 
           color: '#b3b3b3', 
-          fontSize: 14,
+          fontSize: 13,
           opacity: 0.8,
         }}
       >

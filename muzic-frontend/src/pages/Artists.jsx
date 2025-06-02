@@ -23,11 +23,12 @@ export default function Artists() {
       { breakpoint: 1200, settings: { slidesToShow: 4 } },
       { breakpoint: 900, settings: { slidesToShow: 3 } },
       { breakpoint: 600, settings: { slidesToShow: 2 } },
+      { breakpoint: 400, settings: { slidesToShow: 1 } },
     ],
   };
 
   return (
-    <Box>
+    <Box >
       <Box sx={{ mt: 4 }}>
         <Typography
           variant="h5"
@@ -39,15 +40,15 @@ export default function Artists() {
             letterSpacing: 0.5,
           }}
         >
-          Thể loại
+          Nghệ sĩ
         </Typography>
       </Box>
       <Box>
         <Slider {...sliderSettings}>
           {artists.map((artist) => (
-            <div key={artist.id}>
+            <Box key={artist.id} sx={{ px: 1, display: 'flex', justifyContent: 'center' }}>
               <ArtistCard artist={artist} />
-            </div>
+            </Box>
           ))}
         </Slider>
       </Box>

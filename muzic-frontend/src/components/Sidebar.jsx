@@ -5,7 +5,6 @@ import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
 import HistoryIcon from '@mui/icons-material/History';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import { Link, useLocation } from 'react-router-dom';
-import { Box } from '@mui/material';
 
 const drawerWidth = 220;
 

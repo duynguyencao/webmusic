@@ -86,7 +86,7 @@ export default function Login({ onLogin }) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'none',
+      background: 'linear-gradient(135deg, rgba(30,215,96,0.12) 0%, rgba(25,20,20,0.85) 100%)',
     }}>
       <Box component="form" onSubmit={isLogin ? handleLogin : handleRegister} sx={{
         p: 4,

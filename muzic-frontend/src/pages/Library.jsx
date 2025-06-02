@@ -34,7 +34,7 @@ export default function Library({ user, setCurrentSong, reloadFavorites, favorit
                 .then(data => {
                     const favoritesList = Array.isArray(data) ? data : [];
                     setFavorites(favoritesList);
-                    if (typeof onUpdatePlaylist === 'function') {
+                    if (typeof onUpdatePlaylist === 'function' && favoritesReloadKey) {
                         onUpdatePlaylist(favoritesList);
                     }
                     setIsLoaded(true);

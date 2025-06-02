@@ -23,15 +23,16 @@ export default function Genres() {
       { breakpoint: 1200, settings: { slidesToShow: 4 } },
       { breakpoint: 900, settings: { slidesToShow: 3 } },
       { breakpoint: 600, settings: { slidesToShow: 2 } },
+      { breakpoint: 400, settings: { slidesToShow: 1 } },
     ],
   };
 
   return (
     <Box>
-      <Box sx={{ mt: 4 }}>
+    <Box sx={{ mt: 4 }}>
         <Typography
           variant="h5"
-          sx={{
+            sx={{
             color: "#fff",
             fontWeight: 700,
             mb: 3,
@@ -45,12 +46,12 @@ export default function Genres() {
       <Box>
         <Slider {...sliderSettings}>
           {genres.map((genre) => (
-            <div key={genre.id}>
+            <Box key={genre.id} sx={{ px: 1, display: 'flex', justifyContent: 'center' }}>
               <GenreCard genre={genre} />
-            </div>
-          ))}
+          </Box>
+        ))}
         </Slider>
       </Box>
     </Box>
   );
-}
+} 

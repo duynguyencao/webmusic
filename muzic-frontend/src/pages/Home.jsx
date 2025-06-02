@@ -14,7 +14,6 @@ export default function Home({
   setCurrentSong,
   search,
   onUpdatePlaylist,
-  ...props
 }) {
   const isAdmin = user && user.username === "admin";
 
